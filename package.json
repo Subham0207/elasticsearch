@@ -5,13 +5,15 @@
   "main": "index.js",
   "scripts": {
     "compile": "npx tsc",
-    "start": "npx tsc && node dist/index.js"
+    "start": "npx tsc && node dist/index.js",
+    "migrate": "npx tsc && node dist/src/elasticsearch/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "@types/express": "^5.0.6",
     "@types/node": "^26.1.0",
     "eslint": "^10.6.0",
     "prettier": "^3.9.4",
@@ -19,6 +21,7 @@
     "typescript": "^6.0.3"
   },
   "dependencies": {
-    "@elastic/elasticsearch": "^9.4.2"
+    "@elastic/elasticsearch": "^9.4.2",
+    "express": "^5.2.1"
   }
 }
