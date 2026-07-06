@@ -68,15 +68,16 @@ export class JobsController{
     async searchJobs(request: any, response: any){
         const size = Number(request.query.size) || 10;
         const nextCursor = request.query.nextCursor || null;
+        const searchString = request.query.search || null;
 
         if (!nextCursor) {
-            const jobs = await this.elasticSearch.searchJobs(null, size);
+            const jobs = await this.elasticSearch.searchJobs(searchString, null, size);
             return response.status(200).json(jobs);
         }
 
         try {
             const decodedCursor = decodeCursor(nextCursor);
-            const jobs = await this.elasticSearch.searchJobs(decodedCursor, size);
+            const jobs = await this.elasticSearch.searchJobs(searchString, decodedCursor, size);
             return response.status(200).json(jobs);
         } catch {
             return response.status(400).json({

@@ -1,4 +1,4 @@
-import { Client } from "@elastic/elasticsearch";
+import { Client, estypes } from "@elastic/elasticsearch";
 import { createElasticClient } from "../elasticsearch/Client.js";
 import type { CursorPageResponse, GetJobsResponse, Job } from "../Models/Job.js";
 
@@ -47,21 +47,30 @@ export class ElasticSearchService
         };
     }
 
-    public async searchJobs(lastHitSortValue: Array<string | number> | null = null, size: number = 10): Promise<CursorPageResponse>
+    public async searchJobs(searchString: string| null = null, lastHitSortValue: Array<string | number> | null = null, size: number = 10): Promise<CursorPageResponse>
     {
-        const searchParams = {
+        const searchParams: estypes.SearchRequest = {
             index: this.jobsIndex,
             sort: [
-                { createdAt: "desc" },
-                { id: "asc" },
+                { _score: { order: "desc" } }, // sort first by relevance
+                { createdAt: { order: "desc" } },
+                { id: { order: "asc" } },
             ],
             size,
+            ...(searchString ? {query: {
+                multi_match: {
+                    query: searchString,
+                    fields: ["title^3", "description", "skills"], // titile^3 means title match is more important
+                },
+            }}: {}),
             ...(lastHitSortValue ? { search_after: lastHitSortValue } : {}),
         };
 
         const nextResult = await this.es.search<Job>(searchParams);
 
         const hits = nextResult.hits.hits;
+        console.log(hits); // Hit has other properties like
+        // - score, sort, _source is our actual object.
         const jobs = hits
             .map((hit) => hit._source)
             .filter((job): job is Job => Boolean(job));
