@@ -1,5 +1,4 @@
 import express from "express";
-import type { Job } from "./src/Models/Job.js";
 import { ElasticSearchService } from "./src/services/elasticSearchService.js";
 import { JobsController } from "./src/controllers/jobsController.js";
 
