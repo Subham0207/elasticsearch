@@ -1,6 +1,6 @@
 import { Client } from "@elastic/elasticsearch";
 import { createElasticClient } from "../elasticsearch/Client.js";
-import type { Job } from "../Models/Job.js";
+import type { GetJobsResponse, Job } from "../Models/Job.js";
 
 export class ElasticSearchService
 {
@@ -23,10 +23,29 @@ export class ElasticSearchService
             title: job.title,
             company: job.company,
             description: job.description,
-            skills: job.skills,
             location: job.location,
             createdAt: job.createdAt,
             },
         });
+    }
+
+    public async getJobs(fromPage: number = 0): Promise<GetJobsResponse>
+    {
+        const response = await this.es.search({
+            index: this.jobsIndex,
+            size: 10,
+            from: fromPage * 10,
+        });
+        const jobs = response.hits.hits.map((hit: any) => hit._source as Job);
+        return {
+            jobs,
+            from: fromPage,
+            size: 10,
+        };
+    }
+
+    public async getJobsByCursor()
+    {
+
     }
 }
