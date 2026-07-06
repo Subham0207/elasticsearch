@@ -17,7 +17,8 @@ app.get("/health", (_request, response) => {
 });
 
 app.post("/jobs", (request, response) => jobsController.createJobs(request, response));
-app.get("/jobs", async (_request, response) => jobsController.getJobs(_request, response));
+app.get("/jobs", async (request, response) => jobsController.getJobs(request, response));
+app.get("/jobs/search", async (request, response) => jobsController.searchJobs(request, response));
 
 app.listen(port, () => {
     console.log(`Server listening on port ${port}`);

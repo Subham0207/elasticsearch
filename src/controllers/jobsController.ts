@@ -2,6 +2,17 @@ import type { Job } from "../Models/Job.js";
 import type { ElasticSearchService } from "../services/elasticSearchService.js";
 import { validateCreateJobRequest } from "../Validators/Job.js";
 
+function decodeCursor(cursor: unknown): Array<string | number> {
+    const cursorRaw = Buffer.from(String(cursor), "base64").toString("utf8");
+    const parsedCursor = JSON.parse(cursorRaw);
+
+    if (!Array.isArray(parsedCursor)) {
+        throw new Error("Cursor must decode to an array");
+    }
+
+    return parsedCursor as Array<string | number>;
+}
+
 export class JobsController{
     private elasticSearch: ElasticSearchService;
 
@@ -46,9 +57,32 @@ export class JobsController{
     }
 
     async getJobs(request: any, response: any){
+        const size = Number(request.query.size) || 10;
+
         const fromPage = Number(request.query.fromPage) || 0;
-        const jobs = await this.elasticSearch.getJobs(fromPage);
+        const jobs = await this.elasticSearch.getJobs(fromPage, size);
 
         return response.status(200).json(jobs);
+    }
+
+    async searchJobs(request: any, response: any){
+        const size = Number(request.query.size) || 10;
+        const nextCursor = request.query.nextCursor || null;
+
+        if (!nextCursor) {
+            const jobs = await this.elasticSearch.searchJobs(null, size);
+            return response.status(200).json(jobs);
+        }
+
+        try {
+            const decodedCursor = decodeCursor(nextCursor);
+            const jobs = await this.elasticSearch.searchJobs(decodedCursor, size);
+            return response.status(200).json(jobs);
+        } catch {
+            return response.status(400).json({
+                message: "Invalid nextCursor",
+                details: "nextCursor must be a valid base64-encoded JSON array",
+            });
+        }
     }
 }

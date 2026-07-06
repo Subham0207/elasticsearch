@@ -12,3 +12,9 @@ export interface GetJobsResponse {
     from: number;
     size: number;
 }
+
+export interface CursorPageResponse {
+    jobs: Job[];
+    size: number;
+    nextCursor: string | null;
+}
