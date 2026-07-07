@@ -47,10 +47,15 @@ export class ElasticSearchService
         };
     }
 
-    public async searchJobs(searchString: string| null = null, lastHitSortValue: Array<string | number> | null = null, size: number = 10): Promise<CursorPageResponse>
+    public async searchJobs(
+        searchString: string| null = null,
+        lastHitSortValue: Array<string | number> | null = null,
+        size: number = 10,
+        pitId: string | null = null, keepAlive: string = "1m",
+    ): Promise<CursorPageResponse>
     {
         const searchParams: estypes.SearchRequest = {
-            index: this.jobsIndex,
+            ...(pitId ? { pit: { id: pitId, keep_alive: keepAlive } } : {index: this.jobsIndex}),
             sort: [
                 { _score: { order: "desc" } }, // sort first by relevance
                 { createdAt: { order: "desc" } },
@@ -85,5 +90,20 @@ export class ElasticSearchService
             size,
             nextCursor,
         };
+    }
+
+    public async createPIT(ttl: string = "1m"): Promise<string> {
+        const pit = await this.es.openPointInTime({
+            index: this.jobsIndex,
+            keep_alive: ttl,
+        });
+
+        return pit.id;
+    }
+
+    public async removePIT(pitId: string){
+        await this.es.closePointInTime({
+                id: pitId,
+        });
     }
 }

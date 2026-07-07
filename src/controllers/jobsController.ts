@@ -69,21 +69,47 @@ export class JobsController{
         const size = Number(request.query.size) || 10;
         const nextCursor = request.query.nextCursor || null;
         const searchString = request.query.search || null;
-
-        if (!nextCursor) {
-            const jobs = await this.elasticSearch.searchJobs(searchString, null, size);
-            return response.status(200).json(jobs);
-        }
-
+        const pitId = request.query.pitId;
+        const keepAlive = request.query.keepAlive;
+        
         try {
+
+            if (!nextCursor) {
+                const jobs = await this.elasticSearch.searchJobs(searchString, null, size, pitId, keepAlive);
+                return response.status(200).json(jobs);
+            }
+
             const decodedCursor = decodeCursor(nextCursor);
-            const jobs = await this.elasticSearch.searchJobs(searchString, decodedCursor, size);
+            const jobs = await this.elasticSearch.searchJobs(searchString, decodedCursor, size, pitId, keepAlive);
             return response.status(200).json(jobs);
-        } catch {
-            return response.status(400).json({
-                message: "Invalid nextCursor",
-                details: "nextCursor must be a valid base64-encoded JSON array",
+        } catch (err: any) {
+            if(err?.message.includes("search_phase_execution_exception"))
+                return response.status(400).json({
+                    message: "pitId or nextCursor invalid or expired",
+                });
+            
+            return response.status(500).json({
+                message: err?.message,
             });
         }
+    }
+
+    async createPIT(request: any, response: any){
+        const ttl = request.query.ttl || "1m";
+        const pitId = await this.elasticSearch.createPIT(ttl);
+        return response.status(200).json({ pitId });
+    }
+
+    async removePIT(request: any, response: any){
+        const pitId = request.query.pitId;
+        if (!pitId) {
+            return response.status(400).json({
+                message: "Missing pitId",
+                details: "pitId query parameter is required to remove a PIT",
+            });
+        }
+
+        await this.elasticSearch.removePIT(pitId);
+        return response.status(200).json({ message: "PIT removed successfully" });
     }
 }

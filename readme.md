@@ -19,7 +19,9 @@ docker run -d \
 # Goals
 - create documents in elastic indexes
 - search them in UI for various usecases
-    - full text search - done
+    - full text search
+      - normal
+      - filter + full text search
     - geo search
     - see how pit works
     - pagination types
