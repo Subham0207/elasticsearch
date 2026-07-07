@@ -31,3 +31,23 @@ docker run -d \
     - pagination types
       - from,size - done
       - search_after - done
+
+- Scaling policies ( not coded but part of infrastructure )
+  - shards ( data divided among multiple database instance ), replicas ( replicating shards ), partitions ( data divided in the same database instance )
+
+# Nodes
+  - Coordintator node
+  - 
+
+# Shards
+  - scatter-gather pattern - coorinator node -> shards search independently and merge result.
+  - No. of shards cannot be updated. Instead you need to create a new index.
+# Replicas
+  - Primary shard instance and its replica is never put under same node.
+    - Helps with availability, when primary is down replica is promoted to primary.
+
+# Versioned index and alias:
+  - elasitcsearch mappings are immutable. since it uses inverted index.
+  - if an index mapping ( type ) changes. We need to create a new version of that index.
+  - reindex the new index. ( populate the new index)
+  - Then point the alias to the new version
