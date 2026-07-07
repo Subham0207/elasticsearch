@@ -3,6 +3,7 @@ import { ElasticSearchService } from "./src/services/elasticSearchService.js";
 import { JobsController } from "./src/controllers/jobsController.js";
 
 const app = express();
+app.set('query parser', 'extended');
 const port = Number(process.env.PORT ?? 3000);
 
 app.use(express.json());

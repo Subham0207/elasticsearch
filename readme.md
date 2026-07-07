@@ -20,10 +20,12 @@ docker run -d \
 - create documents in elastic indexes
 - search them in UI for various usecases
     - full text search
-      - normal
+      - normal - done
       - filter + full text search
+        - must - effects score - done
+        - filter - does not effect score. Used for exact contraints - done
     - geo search
-    - see how pit works
+    - see how pit works - done
     - pagination types
       - from,size - done
       - search_after - done

@@ -71,16 +71,18 @@ export class JobsController{
         const searchString = request.query.search || null;
         const pitId = request.query.pitId;
         const keepAlive = request.query.keepAlive;
+        const filters = request.query.filters || null;
+        console.log("Filters received:", filters);
         
         try {
 
             if (!nextCursor) {
-                const jobs = await this.elasticSearch.searchJobs(searchString, null, size, pitId, keepAlive);
+                const jobs = await this.elasticSearch.searchJobs(searchString, null, size, pitId, keepAlive, filters);
                 return response.status(200).json(jobs);
             }
 
             const decodedCursor = decodeCursor(nextCursor);
-            const jobs = await this.elasticSearch.searchJobs(searchString, decodedCursor, size, pitId, keepAlive);
+            const jobs = await this.elasticSearch.searchJobs(searchString, decodedCursor, size, pitId, keepAlive, filters);
             return response.status(200).json(jobs);
         } catch (err: any) {
             if(err?.message.includes("search_phase_execution_exception"))

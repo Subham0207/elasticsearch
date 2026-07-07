@@ -52,6 +52,7 @@ export class ElasticSearchService
         lastHitSortValue: Array<string | number> | null = null,
         size: number = 10,
         pitId: string | null = null, keepAlive: string = "1m",
+        filters: Record<string, any> | null = null,
     ): Promise<CursorPageResponse>
     {
         const searchParams: estypes.SearchRequest = {
@@ -62,12 +63,21 @@ export class ElasticSearchService
                 { id: { order: "asc" } },
             ],
             size,
-            ...(searchString ? {query: {
-                multi_match: {
-                    query: searchString,
-                    fields: ["title^3", "description", "skills"], // titile^3 means title match is more important
-                },
-            }}: {}),
+            query: {
+                bool: {
+                    must: [
+                        ...(searchString ? [{
+                            multi_match: {
+                                query: searchString,
+                                fields: ["title^3", "description", "skills"], // title^3 means title match is more important
+                            },
+                        }] : [])
+                    ],
+                    filter: [
+                        ...(filters?.['company'] ? [{ term: {company: filters['company']}}] : [])
+                    ]
+                }
+            },
             ...(lastHitSortValue ? { search_after: lastHitSortValue } : {}),
         };
 
