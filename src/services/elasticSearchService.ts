@@ -55,10 +55,18 @@ export class ElasticSearchService
         filters: Record<string, any> | null = null,
     ): Promise<CursorPageResponse>
     {
+        const lat = filters?.['lat'] as number || null;
+        const lon = filters?.['lon'] as number || null;
+        const distance = filters?.['distance'] as string || '50km';
         const searchParams: estypes.SearchRequest = {
             ...(pitId ? { pit: { id: pitId, keep_alive: keepAlive } } : {index: this.jobsIndex}),
             sort: [
                 { _score: { order: "desc" } }, // sort first by relevance
+                ...(lat && lon ? [{ _geo_distance: {
+                    location: {
+                        lat,
+                        lon,
+                }}}] : []),
                 { createdAt: { order: "desc" } },
                 { id: { order: "asc" } },
             ],
@@ -74,7 +82,16 @@ export class ElasticSearchService
                         }] : [])
                     ],
                     filter: [
-                        ...(filters?.['company'] ? [{ term: {company: filters['company']}}] : [])
+                        ...(filters?.['company'] ? [{ term: {company: filters['company']}}] : []),
+                        ...(lat && lon && distance ? [{
+                            geo_distance: {
+                                distance: distance,
+                                location: {
+                                    lat,
+                                    lon,
+                                },
+                            },
+                        }] : [])
                     ]
                 }
             },

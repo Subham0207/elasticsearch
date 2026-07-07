@@ -24,8 +24,10 @@ docker run -d \
       - filter + full text search
         - must - effects score - done
         - filter - does not effect score. Used for exact contraints - done
-    - geo search
+    - geo search - done
     - see how pit works - done
+      - when underlying index may change b/w requests causing missing/duplicate docs.
+        - duplicate - due to new product added, products on page 1 shifted to page 2. Example: google search.
     - pagination types
       - from,size - done
       - search_after - done
